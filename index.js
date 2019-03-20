@@ -1,12 +1,22 @@
 // code away!
 const express = require('express');
-const server = express();
 const userDb = require('./data/helpers/userDb');
+const cors = require('cors');
 
-server.use(express.json())
+const server = express();
 
 
 server.listen(8000, () => console.log('Server up and running on port 8k'))
+
+
+function upperCaseUser(req, res, next) {
+    console.log(req.body)
+    next();
+}
+
+server.use(express.json());
+server.use(cors());
+
 
 
 server.get('/api/users', (req, res) => {
@@ -59,4 +69,27 @@ server.post('/api/users', (req, res) => {
             res.status(500).json({ error: 'User could not be added' })
         })
     }
+})
+
+server.delete('/api/users/:id', (req, res) => {
+    const id = req.params.id;
+    userDb
+    .getById(id)
+    .then(user => {
+        if (!user) {
+            res.status(404).json({ message: 'User does not exist' })
+        } else {
+            userDb
+            .remove(id)
+            .then(res => {
+                res.status(200).json(user)
+            })
+            .catch(err => {
+                res.status(500).json({ error: 'User could not be removed' })
+            })
+        }
+    })
+    .catch(err => {
+        res.status(500).json({ error: 'User could not be removed'})
+    })
 })
