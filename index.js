@@ -35,6 +35,16 @@ server.get('/api/users', (req, res) => {
     })
 })
 
+server.get('/api/users/:id', (req, res) => {
+    const id = req.params.id;
+    userDb
+    .getById(id)
+    .then(user => res.status(200).json(user))
+    .catch(err => {
+        res.status(500).json({ error: "Could not find user" })
+    })
+})
+
 //** Posts **//
 server.get('/api/posts', (req, res) => {
     postDb
