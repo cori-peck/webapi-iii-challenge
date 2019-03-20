@@ -1,6 +1,7 @@
 // code away!
 const express = require('express');
 const userDb = require('./data/helpers/userDb');
+const postDb = require('./data/helpers/postDb');
 const cors = require('cors');
 
 const server = express();
@@ -11,14 +12,19 @@ server.listen(8000, () => console.log('Server up and running on port 8k'))
 
 function upperCaseUser(req, res, next) {
     console.log(req.body)
+    if (req.body.name) {
+        req.body.name = req.body.name.toUpperCase();
+    }
     next();
 }
 
 server.use(express.json());
 server.use(cors());
+server.use(upperCaseUser);
 
 
-
+//R - Read
+//** Users **//
 server.get('/api/users', (req, res) => {
     userDb
     .get()
@@ -26,6 +32,32 @@ server.get('/api/users', (req, res) => {
     .catch(err => {
         console.log(err)
         res.status(500).json({ error: 'Cannot reach user list'})
+    })
+})
+
+//** Posts **//
+server.get('/api/posts', (req, res) => {
+    postDb
+    .get()
+    .then(posts => res.status(200).json({ posts }))
+    .catch(err => {
+        res.status(500).json({ error: 'Cannot reach post list' })
+    })
+})
+
+server.get('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+    postDb
+    .getById(id)
+    .then(post => {
+        if (post.length < 1) {
+            res.status(404).json({ message: "The post for the ID does not exist" })
+        } else {
+            res.status(200).json({ post })
+        }
+    })
+    .catch(err => {
+        res.status(500).json({ error: "Can not get this post" })
     })
 })
 
